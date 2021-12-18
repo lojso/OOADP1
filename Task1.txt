@@ -1,0 +1,88 @@
+class BoundedStack<T>
+
+  private const int DEFAULT_MAX_SIZE = 32;
+
+  // скрытые поля
+  private List<T> stack; // основное хранилище стека
+  private int peek_status; // статус запроса peek()
+  private int pop_status; // статус команды pop()
+  private int push_status; // статус команды push(int)
+  private int max_size; // установленный максимальный размер стека
+
+  // интерфейс класса, реализующий АТД Stack
+  public const int POP_NIL = 0;
+  public const int POP_OK = 1;
+  public const int POP_ERR = 2;
+
+  public const int PEEK_NIL = 0;
+  public const int PEEK_OK = 1;
+  public const int PEEK_ERR = 2;
+
+  public const int PUSH_NIL = 0;
+  public const int PUSH_OK = 1;
+  public const int PUSH_ERR = 2;
+
+
+  // Постусловие: создан пустой стек ограниченный 32 элементами
+  public void Stack() // конструктор по умолчанию
+    Stack(DEFAULT_MAX_SIZE)
+
+
+  // Постусловие: создан пустой стек ограниченный заданным размером
+  public void Stack(int size) // конструктор с параметром
+    clear()
+    max_size = size
+
+
+  // Предусловие: в стеке меньше элементов, чем ограничение заданное при создании
+  // Постусловие: наверх стека добавлен новый элемент
+  public void push(T value)
+    if(size < max_size)
+        stack.Append(value)
+        push_status = PUSH_OK
+    else
+        push_status = PUSH_ERR
+
+
+  // Предусловие: стек не пустой
+  // Постусловие: из стека удален верхний элемент
+  public void pop()
+    if size() > 0
+      stack.RemoveAt(-1)
+      pop_status = POP_OK
+    else
+      pop_status = POP_ERR
+
+
+  // Постусловие: из стека удалены все значения
+  public void clear()
+    stack = [ ] // пустой список/стек
+
+    // начальные статусы для предусловий peek() и pop()
+    peek_status = PEEK_NIL
+    pop_status = POP_NIL
+    push_status = PUSH_NIL
+
+
+  // Предусловие: стек не пустой
+  public T peek()
+    if size() > 0
+      result = stack[-1]
+      peek_status = PEEK_OK
+    else
+      result = 0
+      peek_status = PEEK_ERR
+    return result
+
+  public int size()
+    return stack.Length()
+
+  // запросы статусов
+  public int get_pop_status()
+    return pop_status
+
+  public int get_peek_status()
+    return peek_status
+
+  public int get_peek_status()
+    return peek_status
