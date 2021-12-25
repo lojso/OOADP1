@@ -78,7 +78,7 @@ class LinkedList<T>
             _tail = newNode;
             _cursor = newNode;
             return
-            
+
         if(is_head())
             _head = newNode;
         else 
@@ -252,7 +252,7 @@ class Node<T>
 
     // Конструктор
     // Создает узел с заданным значением
-    public void Node(T value)
+    public Node(T value)
         _value = value
         _left = null
         _right = null
