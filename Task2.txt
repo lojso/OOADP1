@@ -1,0 +1,320 @@
+class LinkedList<T>
+
+    private Node<T> _head;
+    private Node<T> _tail;
+    private Node<T> _cursor;
+    private int _size;
+
+    public const int RIGHT_NIL = 0; // Метод right еще не вызывался
+    public const int RIGHT_OK = 1;  // Метод right закончился успешно
+    public const int RIGHT_ERR = 2; // Метод right закончился с ошибкой
+
+    public const int REMOVE_NIL = 0; // Метод remove еще не вызывался
+    public const int REMOVE_OK = 1; // Метод remove закончился успешно
+    public const int REMOVE_ERR = 2; // Метод remove закончился с ошибкой
+
+    public const int FIND_NIL = 0;  // Метод find еще не вызывался
+    public const int FIND_OK = 1;   // Метод find закончился успешно
+    public const int FIND_ERR = 2;  // Метод find закончился с ошибкой
+
+    public const int GET_NIL = 0;  // Метод get еще не вызывался
+    public const int GET_OK = 1;  // Метод get закончился успешно
+    public const int GET_ERR = 2;  // Метод get закончился с ошибкой
+
+    private int _right_status;
+    private int _remove_status;
+    private int _find_status;
+    private int _get_status;
+
+    // Постусловие: создан пустой список
+    public LinkedList<T>()
+        clear()        
+    
+    // Команды
+    // Постусловие: текущее значение является первым элементом списка
+    public void head()
+        _cursor = _head
+
+    // Постусловие: текущее значение является последним элементом списка
+    public void tail()
+        _cursor = _tail
+
+    // Предусловие: список не пустой
+    // Предусловие: текущее значение не последнее
+    // Постусловие: выбирает следующее за текущим значение
+    public void right()
+        if(size() == 0 || _cursor == _tail)
+            _right_status = RIGHT_ERR
+            return
+        _cursor = _cursor.get_right()
+        _right_status = RIGHT_OK
+
+
+    // Постусловие: добавляется заданное значение после текущего
+    // Постусловие: если значений нет то текущее значение становится заданным
+    public void put_right(T value)
+        var newNode = new Node(value)
+        if(size() == 0)
+            _head = newNode;
+            _tail = newNode;
+            _cursor = newNode;
+            return
+
+        if(is_tail())
+            _tail = newNode;
+        else 
+            newNode.set_right(_cursor.get_right())
+            _cursor.get_right().set_left(newNode)
+        newNode.set_left(_cursor)
+        _cursor.set_right(newNode)
+        _size++
+
+    // Постусловие: добавляется заданное значение перед текущим
+    // Постусловие: если значений нет то текущее значение становится заданным
+    public void put_left(T value)
+        var newNode = new Node(value)
+        if(size() == 0)
+            _head = newNode;
+            _tail = newNode;
+            _cursor = newNode;
+            return
+            
+        if(is_head())
+            _head = newNode;
+        else 
+            newNode.set_left(_cursor.get_left())
+            _cursor.get_left().set_right(newNode)
+        newNode.set_right(_cursor)
+        _cursor.set_left(newNode)
+        _size++
+
+    // Предусловие: список не пустой
+    // Постусловие: в списке удаляется текущий узел
+    public void remove()
+        if(size() == 0)
+            _remove_status = REMOVE_ERR
+            return
+        if(size() == 1)
+            clear()
+        elif(is_tail())
+            _tail = _cursor.get_left()
+            _tail.remove_right()
+            _cursor = _tail
+        elif(is_head())
+            _head = _cursor.get_right()
+            _head.remove_left()
+            _cursor = head
+        else
+            _cursor.get_right.set_left(_cursor.get_left)
+            _cursor.get_left.set_right(_cursor.get_right)
+            _cursor = _cursor.get_right()
+        _size--
+        _remove_status = REMOVE_OK
+        
+    // Постусловие: в списке нет значений
+    public void clear()
+        _head = null
+        _tail = null
+        _cursor = null
+        _size = 0
+        _right_status = RIGHT_NIL
+        _remove_status = REMOVE_NIL
+        _find_status = FIND_NIL
+
+
+    // Постусловие: добавляется заданное значение после последнего значения в списке
+    // Постусловие: если значений в списке нет то текущее значение становится заданным    
+    public void add_tail(T value)
+        var currentCursor = _cursor
+        _cursor = _tail
+        put_right(value)
+        if(currentCursor != nil)
+            _cursor = currentCursor
+
+    // Постусловие: текущее значение заменяется новым
+    public void replace(T value)
+        var newNode = new Node(value) 
+        if(size() == 0)
+            _cursor = newNode;
+            _head = newNode;
+            _tail = newNode;
+            return
+        if(_cursor.is_right)
+            _cursor.get_right.set_left(newNode)
+        if(_cursor.is_left)
+            _cursor.get_left.set_right(newNode)
+        _cursor = newNode
+
+    // Предусловие: в правой части списка, от текущего значения, списке есть искомый узел
+    // Постусловие: первое встречное значение в правой части списка, от текущего, становится новым текущим значением
+    public void find(value)
+        if(size() == 0)
+            _find_status = FIND_ERR
+            return 
+        var searchNode = _cursor
+        while(searchNode.is_right())
+            if(searchNode.get_value() == value)
+                _cursor = searchNode;
+                _find_status = FIND_OK
+                return
+            searchNode = searchNode.get_right()
+        if(searchNode.get_value() == value)
+                _cursor = searchNode;
+                _find_status = FIND_OK
+                return
+        _find_status = FIND_ERR
+
+    // Постусловие: в списке отсутствуют узлы с заданным значением
+    public void remove_all(value)
+        if(size() == 0)
+            return
+        var baseNode = _cursor
+        _cursor = _head
+        while(is_exists(value))
+            find(value)
+            var nodeToRemove = _cursor;
+            remove()
+            if(baseNode == nodeToRemove)
+                baseNode = _cursor  
+        _cursor = baseNode
+
+// Запросы
+
+    // Предусловие: список не пустой
+    // Возвращает текущее значение
+    public T get()
+        if(is_value)
+            _get_status = GET_OK
+            return T
+        _get_status = GET_ERR
+        return nil
+
+
+    // Возвразщает количество значений в списке
+    public void size()
+        return _size;
+        
+    // Возвращает, является ли текущее значение первым
+    public bool is_head()
+        return _cursor == head
+
+    // Возвращает, является ли текущее значение последним
+    public bool is_tail()
+        return _cursor == _tail
+        
+    // Возвращает, есть ли сейчас текущее значение
+    public bool is_value()
+        return _cursor != null    
+
+    // Метод помогающий  в реализации АТД, возвращает существует ли заданное значение в правой части списка, от текущего значения
+    private bool is_exists_right(value)
+        if(size() == 0)
+            return false
+        var searchNode = _cursor
+        while(searchNode.is_right())
+            if(searchNode.get_value() == value)
+                return true
+            searchNode = searchNode.get_right()
+        if(searchNode.get_value() == value)
+                return true
+        return false
+
+// Запросы статусов выполнения команд
+    public int get_right_status()
+        return _right_status
+
+    public int remove_status()
+        return _remove_status
+
+    public int find_status()
+        return _find_status
+
+    public int get_status()
+        return _get_status
+
+class Node<T>
+
+    private readonly T _value;
+
+    private Node<T> _left;
+    private Node<T> _right;
+
+    private int _get_left_status;
+    private int _get_right_status;
+
+    public int GET_RIGHT_NIL = 0;
+    public int GET_RIGHT_OK = 1;
+    public int GET_RIGHT_ERR = 2;
+
+    public int GET_LEFT_NIL = 0;
+    public int GET_LEFT_OK = 1;
+    public int GET_LEFT_ERR = 2;
+
+    // Конструктор
+    // Создает узел с заданным значением
+    public void Node(T value)
+        _value = value
+        _left = null
+        _right = null
+        _get_left_status = GET_LEFT_NIL;
+        _get_right_status = GET_RIGHT_NIL;
+
+
+    // Команды
+    // Постусловие: устанавливает левым соседом заданный узел.
+    public void set_left(Node<T> node){}
+        _left = node
+
+
+    // Постусловие: отсутствует ссылка на предидущий узел.
+    public void remove_left()){}
+        _left = nil
+
+    
+    // Постусловие: устанавливает правым соседом заданный узел.
+    public void set_right(Node<T> node)
+        _right = node
+
+    // Постусловие: отсутствует ссылка на следующий узел.
+    public void remove_right(){}
+        _right = nil
+
+
+    // Запросы
+    // Предусловие: есть сосед слева
+    // Постусловие: возвращает узел соседа слева
+    public Node<T> get_left()
+        if(is_left)
+            _get_left_status = GET_LEFT_OK
+            return _left;
+        _get_left_status = GET_LEFT_ERR
+
+    // Предусловие: есть сосед справа
+    // Постусловие: возвращает узел соседа справа
+    public Node<T> get_right()
+        if(is_right)
+            _get_right_status = GET_RIGHT_OK
+            return _right;
+        _get_right_status = GET_RIGHT_ERR
+
+    // Постусловие: возвращает true, если справа от узла есть другой узел
+    public bool is_right()
+        return _right != null
+
+    // Постусловие: возвращает true, если слева от узла есть другой узел
+    public bool is_left()
+        return _left != null
+
+    // Возвращает значение, хранимое в узле
+    public T get_value()
+        return _value
+
+    // Запросы статусов выполняния методов
+    public T get_get_left_status()
+        return _get_left_status
+
+    public T get_get_right_status()
+        return _get_right_status
+    
+
+
