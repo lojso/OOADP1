@@ -361,7 +361,7 @@ class TwoWayList<T> : ParentList<T>
 
     // Предусловие: текущее значение не первое
     // Постусловие: выбирает предыдущее за текущим значение
-    public void right()
+    public void left()
         if(size() == 0 || _cursor == _head)
             _left_status = LEFT_ERR
             return
