@@ -60,6 +60,7 @@ class DynamicArray<T>
 
     // Запросы
     // Предусловия: элемент в позиции index существует
+    // Возвращает элемент в позиции index
     public T get_element_at(int index)
         if (index < 0 || index >= _currentSize)
             _get_element_at_status = GET_ELEMENT_AT_ERR
