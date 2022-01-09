@@ -1,0 +1,89 @@
+class DynamicArray<T>
+
+    public const int GET_ELEMENT_AT_NIL = 0;
+    public const int GET_ELEMENT_AT_OK = 1;
+    public const int GET_ELEMENT_AT_ERR = 2;
+
+    public const int SET_ELEMENT_AT_NIL = 0;
+    public const int SET_ELEMENT_AT_OK = 1;
+    public const int SET_ELEMENT_AT_ERR = 2;
+
+    public const int REMOVE_ELEMENT_AT_NIL = 0;
+    public const int REMOVE_ELEMENT_AT_OK = 1;
+    public const int REMOVE_ELEMENT_AT_ERR = 2;
+
+    private int _remove_element_at_status;
+    private int _get_element_at_status;
+    private int _set_element_at_status;
+
+    private const int MIN_CAPACITY = 32;
+    private const int CAPACITY_MULTIPLICATOR = 2;
+
+    private int _currentSize;
+    private T[] _array;
+
+    // Конструктор
+    public DynamicArray()
+        _array = new T[MIN_CAPACITY]
+        _currentSize = 0
+        _remove_element_at_status = REMOVE_ELEMENT_AT_NIL
+        _get_element_at_status = GET_ELEMENT_AT_NIL
+        _set_element_at_status = SET_ELEMENT_AT_NIL
+
+    // Команды
+    // Предусловия: элемент в позиции index существует
+    // Постусловия: значение элемента в позиции index заменено на value
+    public void set_element_at(int index, T value)  
+        if (index < 0 || index >= _currentSize)
+            _set_element_at_status = SET_ELEMENT_AT_ERR
+            return
+        _set_element_at_status = SET_ELEMENT_AT_OK
+        _array[index] = value
+
+    // Предусловия: элемент в позиции index существует
+    // Постусловия: элемент в позиции index удален. Каждый элемент, если это возможно, смещен на позицию влево. 
+    public void remove_element_at(int index)
+        if (index < 0 || index >= _currentSize)
+            _remove_element_at_status = REMOVE_ELEMENT_AT_ERR
+            return
+        _currentSize--;
+        for (var i = index; i < _currentSize; i++) 
+            _array[i] = _array[i + 1];
+        _remove_element_at_status = REMOVE_ELEMENT_AT_OK
+
+    // Постусловия: в конец массива добавлен новый элемент со значением value. 
+    public void append(T value)
+        if(_currentSize == _array.Length)
+            increase_capacity()
+        _array[_currentSize] = value
+        _currentSize++
+
+    // Запросы
+    // Предусловия: элемент в позиции index существует
+    public T get_element_at(int index)
+        if (index < 0 || index >= _currentSize)
+            _get_element_at_status = GET_ELEMENT_AT_ERR
+            return nil
+        _get_element_at_status = GET_ELEMENT_AT_OK
+        return _array[index]
+
+    // Возвращает текущее количество элементов в массиве
+    public int get_size()
+        return _currentSize
+
+    // Запросы статусов выполняния методов
+    public int get_remove_element_at_status()
+        return _remove_element_at_status
+
+    public int get_get_element_at_status()
+        return _get_element_at_status
+
+    public int get_set_element_at_status()
+        return _set_element_at_status
+
+    // Внутренние методы
+    private void increase_capacity()
+        T[] new_array = new T[_array.Length * CAPACITY_MULTIPLICATOR];      
+        for (var i = 0; i < _array.Length; i++)
+            new_array[i] = _array[i];
+        _array = new_array;
