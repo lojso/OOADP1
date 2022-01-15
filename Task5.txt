@@ -8,8 +8,8 @@ public class Queue<T>
     public const int PEEK_OK = 1;    // Метод Peek завершился успешно
     public const int PEEK_ERR = 2;   // Метод Peek завершился с ошибкой: нет элементов в очереди
 
-    private int _dequeue_status; 
-    private int _peek_status; 
+    private int _dequeueStatus; 
+    private int _peekStatus; 
         
     private TwoWayList<T> _queueContainer;
 
@@ -33,11 +33,11 @@ public class Queue<T>
     {
         if (Size() == 0)
         {
-            _dequeue_status = DEQUEUE_ERR;
+            _dequeueStatus = DEQUEUE_ERR;
             return;
         }
         
-        _dequeue_status = DEQUEUE_OK;
+        _dequeueStatus = DEQUEUE_OK;
         _queueContainer.head();
         _queueContainer.remove();
     }
@@ -46,8 +46,8 @@ public class Queue<T>
     public void Clear()
     {
         _queueContainer.clear();
-        _dequeue_status = DEQUEUE_NIL;
-        _peek_status = PEEK_NIL;
+        _dequeueStatus = DEQUEUE_NIL;
+        _peekStatus = PEEK_NIL;
     }
 
     // Запросы
@@ -56,11 +56,11 @@ public class Queue<T>
     {
         if (Size() == 0)
         {
-            _peek_status = PEEK_ERR;
+            _peekStatus = PEEK_ERR;
             return default;
         }
         
-        _peek_status = PEEK_OK;
+        _peekStatus = PEEK_OK;
         _queueContainer.head();
         return _queueContainer.get();
     }
@@ -72,6 +72,6 @@ public class Queue<T>
     }
     
     // Запросы статусов методов
-    public int get_dequeue_status() => _dequeue_status;
-    public int get_peek_status() => _peek_status;
+    public int GetDequeueStatus() => _dequeueStatus;
+    public int GetPeekStatus() => _peekStatus;
 }
