@@ -1,0 +1,77 @@
+public class Queue<T>
+{
+    public const int DEQUEUE_NIL = 0;   // Метод Dequeue еще не вызывался
+    public const int DEQUEUE_OK = 1;    // Метод Dequeue завершился успешно
+    public const int DEQUEUE_ERR = 2;   // Метод Dequeue завершился с ошибкой: нет элементов в очереди
+    
+    public const int PEEK_NIL = 0;   // Метод Peek еще не вызывался
+    public const int PEEK_OK = 1;    // Метод Peek завершился успешно
+    public const int PEEK_ERR = 2;   // Метод Peek завершился с ошибкой: нет элементов в очереди
+
+    private int _dequeue_status; 
+    private int _peek_status; 
+        
+    private TwoWayList<T> _queueContainer;
+
+    // Конструктор
+    public Queue()
+    {
+        _queueContainer = new TwoWayList<T>();
+        Clear();
+    }
+    
+    // Команды
+    // Постусловия: в конец очереди добавлен новый элемент element.
+    public void Enqueue(T element)
+    {
+        _queueContainer.add_tail(element);
+    }
+    
+    // Предусловия: в очереди есть хотя бы один элемент.
+    // Удаляет из начала очереди первый элемент.
+    public void Dequeue()
+    {
+        if (Size() == 0)
+        {
+            _dequeue_status = DEQUEUE_ERR;
+            return;
+        }
+        
+        _dequeue_status = DEQUEUE_OK;
+        _queueContainer.head();
+        _queueContainer.remove();
+    }
+
+    // Постусловия: в очереди нет значений.
+    public void Clear()
+    {
+        _queueContainer.clear();
+        _dequeue_status = DEQUEUE_NIL;
+        _peek_status = PEEK_NIL;
+    }
+
+    // Запросы
+    // Предусловия: в очереди есть хотя бы один элемент.
+    public T Peek()
+    {
+        if (Size() == 0)
+        {
+            _peek_status = PEEK_ERR;
+            return default;
+        }
+        
+        _peek_status = PEEK_OK;
+        _queueContainer.head();
+        return _queueContainer.get();
+    }
+
+    // Возвращает размер очереди
+    public int Size()
+    {
+        return _queueContainer.size();
+    }
+    
+    // Запросы статусов методов
+    public int get_dequeue_status() => _dequeue_status;
+    public int get_peek_status() => _peek_status;
+}
