@@ -1,0 +1,143 @@
+public class ParentQueue<T>
+{
+    public const int REMOVE_HEAD_NIL = 0;   // Метод REMOVE_HEAD еще не вызывался
+    public const int REMOVE_HEAD_OK = 1;    // Метод REMOVE_HEAD завершился успешно
+    public const int REMOVE_HEAD_ERR = 2;   // Метод REMOVE_HEAD завершился с ошибкой: нет элементов в очереди
+    
+    public const int GET_HEAD_NIL = 0;   // Метод GetHead еще не вызывался
+    public const int GET_HEAD_OK = 1;    // Метод GetHead завершился успешно
+    public const int GET_HEAD_ERR = 2;   // Метод GetHead завершился с ошибкой: нет элементов в очереди
+
+    private int _removeHeadStatus; 
+    private int _getHeadStatus; 
+        
+    protected readonly TwoWayList<T> _queueContainer;
+
+    // Конструктор
+    public ParentQueue()
+    {
+        _queueContainer = new TwoWayList<T>();
+        _getHeadStatus = GET_HEAD_NIL;
+        _removeHeadStatus = REMOVE_HEAD_NIL;
+    }
+    
+    // Команды
+    // Постусловие: в конец очереди добавлен новый элемент element.
+    public void Append(T element)
+    {
+        _queueContainer.add_tail(element);
+    }
+    
+    // Предусловие: в очереди есть хотя бы один элемент.
+    // Предусловие: удаляет из начала очереди первый элемент.
+    public void RemoveHead()
+    {
+        if (Size() == 0)
+        {
+            _removeHeadStatus = REMOVE_HEAD_ERR;
+            return;
+        }
+        
+        _removeHeadStatus = REMOVE_HEAD_OK;
+        _queueContainer.head();
+        _queueContainer.remove();
+    }
+
+    // Запросы
+    // Предусловие: в очереди есть хотя бы один элемент.
+    public T GetHead()
+    {
+        if (Size() == 0)
+        {
+            _getHeadStatus = GET_HEAD_ERR;
+            return default;
+        }
+        
+        _getHeadStatus = GET_HEAD_OK;
+        _queueContainer.head();
+        return _queueContainer.get();
+    }
+
+    // Возвращает размер очереди
+    public int Size()
+    {
+        return _queueContainer.size();
+    }
+    
+    // Запросы статусов методов
+    public int GetRemoveHeadStatus() => _removeHeadStatus;
+    public int GetGetHeadStatus() => _getHeadStatus;
+}
+
+public class Queue<T> : ParentQueue<T>
+{
+    
+}
+
+public class Deque<T> : ParentQueue<T>
+{
+    public const int REMOVE_LAST_NIL = 0;   // Метод REMOVE_LAST еще не вызывался
+    public const int REMOVE_LAST_OK = 1;    // Метод REMOVE_LAST завершился успешно
+    public const int REMOVE_LAST_ERR = 2;   // Метод REMOVE_LAST завершился с ошибкой: нет элементов в очереди
+    
+    public const int GET_LAST_NIL = 0;   // Метод GetLast еще не вызывался
+    public const int GET_LAST_OK = 1;    // Метод GetLast завершился успешно
+    public const int GET_LAST_ERR = 2;   // Метод GetLast завершился с ошибкой: нет элементов в очереди
+
+    private int _removeLastStatus; 
+    private int _getLastStatus;
+
+    public Deque()
+    {
+        _removeLastStatus = REMOVE_LAST_NIL;
+        _getLastStatus = GET_LAST_NIL;
+    }
+
+    // Команды
+    // Постусловие: в начало очереди добавлен новый элемент element.
+    public void Prepend(T element)
+    {
+        if(_queueContainer.size() == 0)
+        {
+            _queueContainer.add_tail(element);
+            return;
+        }
+        _queueContainer.head();
+        _queueContainer.put_left(element);
+    }
+    
+    // Предусловике в очереди есть хотя бы один элемент.
+    // Предусловие: удаляет из конца очереди последний элемент.
+    public void RemoveLast()
+    {
+        if (Size() == 0)
+        {
+            _removeLastStatus = REMOVE_LAST_ERR;
+            return;
+        }
+        
+        _removeLastStatus = REMOVE_LAST_OK;
+        _queueContainer.tail();
+        _queueContainer.remove();
+    }
+
+    // Запросы
+    // Предусловие: в очереди есть хотя бы один элемент.
+    public T GetLast()
+    {
+        if (Size() == 0)
+        {
+            _getLastStatus = GET_LAST_ERR;
+            return default;
+        }
+        
+        _getLastStatus = GET_LAST_OK;
+        _queueContainer.tail();
+        return _queueContainer.get();
+    }
+    
+    // Запросы статусов методов
+    public int GetRemoveLastStatus() => _removeLastStatus;
+    public int GetGetLastStatus() => _getLastStatus;
+    
+}
