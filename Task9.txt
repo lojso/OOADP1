@@ -1,0 +1,285 @@
+public class HashTable<TValue>
+{
+    private const int START_SIZE = 19;
+    private const int SEARCH_STEP = 3;
+    private const int SIZE_INCREASE_FACTOR = 2;
+
+    public const int DELETE_NIL = 0;    // Метод Delete еще не вызывался
+    public const int DELETE_OK = 1;     // Метод Delete закончился успешно
+    public const int DELETE_ERR = 2;    // Метод Delete закончился с ошибкой - отсутствует запрашиваемый ключ
+
+    private int _keysAmount;
+    private int _deleteStatus;
+    
+    protected DynamicArray<KeyValueNode<TValue, int>> _slots;
+
+    public HashTable()
+    {
+        _slots = new DynamicArray<KeyValueNode<TValue, int>>();
+        for (int i = 0; i < START_SIZE; i++) 
+            _slots.append(new KeyValueNode<TValue, int>());
+
+        _keysAmount = 0;
+        _deleteStatus = DELETE_NIL;
+    }
+
+    // Команды
+    // Постусловие: в таблице по ключу key находится значение value
+    public virtual void Put(TValue value)
+    {
+        var slot = _slots.get_element_at(FindSlotIndex(value, _slots));
+        if (slot.IsFree())
+            _keysAmount++;
+        slot.SetLocked(value, Hash(value, _slots));
+        
+        if (_keysAmount == _slots.get_size())
+            IncreaseSlotsSize(_slots.get_size() * SIZE_INCREASE_FACTOR);
+    }
+    
+    // Предусловие: в таблице есть ключ key
+    // Постусловие: в таблице отсутствует ключ key
+    public void Delete(TValue key)
+    {
+        var slotIndex = FindSlotIndex(key, _slots);
+        
+        var slot = _slots.get_element_at(slotIndex);
+        if(slot.IsFree())
+        {
+            _deleteStatus = DELETE_ERR;
+            return;
+        }
+
+        _keysAmount--;
+        _deleteStatus = DELETE_OK; 
+        slot.SetFree();
+    }
+
+    // Вернут true если в словаре есть запись с таким ключем. Иначе - false
+    public bool Get(TValue key)
+    {
+        var slotIndex = FindSlotIndex(key, _slots);
+        var slot = _slots.get_element_at(slotIndex);
+        return !slot.IsFree();
+    }
+
+    // Возвращает количество записей 
+    public int Size()
+    {
+        return _keysAmount;
+    }
+
+    public int GetDeleteStatus()
+    {
+        return _deleteStatus;
+    }
+
+    // Внутренние методы
+    private int Hash(TValue key, DynamicArray<KeyValueNode<TValue, int>> forSlots)
+    {
+        return key.GetHashCode() % forSlots.get_size();
+    }
+    
+    private void IncreaseSlotsSize(int newSize)
+    {
+        var newSlots = new DynamicArray<KeyValueNode<TValue, int>>();
+        for (int i = 0; i < START_SIZE; i++) 
+            newSlots.append(new KeyValueNode<TValue, int>());
+
+        for (var i = 0; i <= newSize; i++)
+        {
+            var oldSlot = _slots.get_element_at(i);
+            var newSlotIndex = FindSlotIndex(oldSlot.GetKey(), newSlots);
+            newSlots.get_element_at(newSlotIndex).SetLocked(oldSlot.GetKey(), oldSlot.GetValue());
+        }
+
+        _slots = newSlots;
+    }
+
+    private int FindSlotIndex(TValue key, DynamicArray<KeyValueNode<TValue, int>> searchArray)
+    {
+        var currentIndex = Hash(key, searchArray);
+        var indexLocked = searchArray.get_element_at(currentIndex).IsFree() == false;
+        var indexIsKey = indexLocked && searchArray.get_element_at(currentIndex).GetKey().Equals(key);
+        while (indexLocked || !indexIsKey)
+        {
+            currentIndex += SEARCH_STEP;
+            currentIndex %= searchArray.get_size();
+
+            indexLocked = searchArray.get_element_at(currentIndex).IsFree();
+            indexIsKey = indexLocked == false && searchArray.get_element_at(currentIndex).GetKey().Equals(key);
+        }
+
+        return currentIndex;
+    }
+}
+
+public class PowerSet<T> : HashTable<T>
+{
+    // Возвращает новое множество, содержимым которого является
+    // Пересечение двух множеств
+    public PowerSet<T> Intersection(PowerSet<T> other)
+    {
+        var intersection = new PowerSet<T>();
+        
+        for (int i = 0; i < other.Size(); i++)
+        {
+            var subsetElement = other._slots.get_element_at(i).GetKey();
+            if(Get(subsetElement))
+                intersection.Put(subsetElement);
+        }
+
+        return intersection;
+
+    }
+
+    // Возвращает новое множество, содержимым которого является
+    // Объединение двух множеств
+    public PowerSet<T> Union(PowerSet<T> other)
+    {
+        var union = new PowerSet<T>();
+        
+        for (int i = 0; i < other.Size(); i++) 
+            union.Put(other._slots.get_element_at(i).GetKey());
+        
+        for (int i = 0; i < Size(); i++) 
+            union.Put(_slots.get_element_at(i).GetKey());
+
+        return union;
+    }
+
+    // Возвращает новое множество, содержимым которого является
+    // Разница двух множеств
+    public PowerSet<T> Difference(PowerSet<T> other)
+    {
+        var union = Union(new PowerSet<T>());
+        var intersection = Intersection(other);
+        
+        for (int i = 0; i < intersection.Size(); i++)
+        {
+            var subsetElement = intersection._slots.get_element_at(i).GetKey();
+            if(union.Get(subsetElement))
+                union.Delete(subsetElement);
+        }
+
+        return union;
+    }
+    
+    // Запросы
+    // Возвращает true если все элементы subset находятся внутри объекта. Иначе - false
+    public bool IsSubset(PowerSet<T> subset)
+    {
+        for (int i = 0; i < subset.Size(); i++)
+        {
+            var subsetElement = subset._slots.get_element_at(i).GetKey();
+            if (Get(subsetElement) == false)
+                return false;
+        }
+
+        return true;
+    }
+    
+}
+
+public class KeyValueNode<NKey, NValue>
+{
+    public const int SET_LOCKED_NIL = 0;   // Метод SetLocked еще не вызывался
+    public const int SET_LOCKED_OK = 1;    // Метод SetLocked завершился успешно
+    public const int SET_LOCKED_ERR = 2;   // Метод SetLocked завершился с ошибкой: ячейка уже занята
+    
+    public const int GET_KEY_NIL = 0;   // Метод GetKey еще не вызывался
+    public const int GET_KEY_OK = 1;    // Метод GetKey завершился успешно
+    public const int GET_KEY_ERR = 2;   // Метод GetKey завершился с ошибкой: ячейка пустая
+    
+    public const int GET_VALUE_NIL = 0;   // Метод GetValue еще не вызывался
+    public const int GET_VALUE_OK = 1;    // Метод GetValue завершился успешно
+    public const int GET_VALUE_ERR = 2;   // Метод GetValue завершился с ошибкой: ячейка пустая
+
+    private int _setLockedStatus;
+    private int _getKeyStatus;
+    private int _getValueStatus;
+        
+    private bool _isFree;
+    private NKey _key;
+    private NValue _value;
+
+    public KeyValueNode()
+    {
+        _setLockedStatus = SET_LOCKED_NIL;
+        _getKeyStatus = GET_KEY_NIL;
+        _getValueStatus = GET_VALUE_NIL;
+        SetFree();
+    }
+        
+    // Постусловие: ячейка свободна
+    public void SetFree()
+    {
+        _isFree = true;
+        _key = default;
+        _value = default;
+    }
+        
+    // Предусловие: ячейка свободна
+    // Постусловие: ячейка занята значением value
+    public void SetLocked(NKey key, NValue value)
+    {
+        if (_isFree == false)
+        {
+            _setLockedStatus = SET_LOCKED_ERR;
+            return;
+        }
+        
+        _isFree = false;
+        _key = key;
+        _value = value;
+        _setLockedStatus = SET_LOCKED_OK;
+    }
+
+    // Запросы
+    public bool IsFree()
+    {
+        return _isFree;
+    }
+        
+    // Предусловие: ячейка занята
+    public NKey GetKey()
+    {
+        if (_isFree)
+        {
+            _getKeyStatus = GET_KEY_ERR;
+            return default;
+        }
+
+        _getKeyStatus = GET_KEY_OK;
+        return _key;
+    }
+        
+    // Предусловие: ячейка занята
+    public NValue GetValue()
+    {
+        if (_isFree)
+        {
+            _getValueStatus = GET_VALUE_ERR;
+            return default;
+        }
+
+        _getValueStatus = GET_VALUE_OK;
+        return _value;
+    }
+
+    // Запросы статусов
+    public int GetSetLockedStatus()
+    {
+        return _setLockedStatus;
+    }
+
+    public int GetGetValueStatus()
+    {
+        return _getValueStatus;
+    }
+    
+    public int GetGetKeyStatus()
+    {
+        return _getKeyStatus;
+    }
+    
+}
