@@ -22,7 +22,7 @@ public class BloomFilter<T>
     }
 
     // Запросы
-    // Возвращает значение
+    // Возвращает true если число находится в фильтре, false если нет
     public bool IsContain(T value)
     {
         if (IsInMask(Hash1(value)) == false)
