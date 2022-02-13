@@ -1,0 +1,61 @@
+public class BloomFilter<T>
+{
+    private const int MaskFilterSegmentLength = 32;
+    private readonly int _filterLen;
+    private int _hashCode1 = 17;
+    private int _hashCode2 = 223;
+
+    private Int32[] _mask;
+
+    // Конструктор, создает фильтр длиной filterLen
+    public BloomFilter(int filterLen)
+    {
+        _filterLen = filterLen;
+        _mask = new Int32[filterLen / MaskFilterSegmentLength + 1];
+    }
+    
+    // Постусловие: добавляет в фильтр новый объект
+    public void Add(T value)
+    {
+        SetMask(Hash1(value));
+        SetMask(Hash2(value));
+    }
+
+    // Запросы
+    // Возвращает значение
+    public bool IsContain(T value)
+    {
+        if (IsInMask(Hash1(value)) == false)
+            return false;
+        
+        if (IsInMask(Hash2(value)) == false)
+            return false;
+        
+        return true;
+    }
+
+    // Внутренние методы
+    private void SetMask(int index)
+    {
+        var maskSegmentIndex = index / MaskFilterSegmentLength;
+        var indexInSegment = index % MaskFilterSegmentLength;
+        _mask[maskSegmentIndex] = (1 << indexInSegment) | _mask[maskSegmentIndex];
+    }
+
+    private bool IsInMask(int index)
+    {
+        var maskSegmentIndex = index / MaskFilterSegmentLength;
+        var indexInSegment = index % MaskFilterSegmentLength;
+        return (_mask[maskSegmentIndex] & (1 << indexInSegment)) != 0;
+    }
+
+    private int Hash1(T obj)
+    {
+        return _hashCode1 ^ obj.GetHashCode() % _filterLen;
+    }
+    
+    private int Hash2(T obj)
+    {
+        return _hashCode2 ^ obj.GetHashCode() % _filterLen;
+    }
+}
